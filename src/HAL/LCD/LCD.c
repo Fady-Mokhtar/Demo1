@@ -25,6 +25,9 @@
 #define STOP_WATCH_MODE 1
 #define EDIT_MODE 2
 
+// from keypad
+#define IDLE_MESSAGE		0x01
+
 #define CHANGED 1
 #define NOT_CHANGED 0
 
@@ -42,6 +45,11 @@ void Init_Sm();
 void LCD_Write_Command(uint8_t Command);
 
 void Handle_Time_Edit();
+
+
+void Display_Date_Time_Helper();
+
+void Display_Stop_Watch_Helper();
 
 void Sec_Increment_Task(void);
 void LCD_Write_Data(uint8_t Data);
@@ -291,51 +299,54 @@ volatile static uint8_t Counter_to_Set_Cursor_In_Edit_Mode = 0;
 
 volatile uint8_t Current_Display_Mode = DATE_TIME_MODE;
 
-uint8_t UART_Buffer = 0;
+uint8_t UART_Buffer[2] = {0};
 
 uint8_t Change_Of_Time = CHANGED;
 
-uint8_t modecomm;
+void Switches(void){
+	if(Current_Display_Mode== DATE_TIME_MODE){
+		//// UARTFARME[1] is the recievied command from the uart 
+		 if (UART_Buffer[1] == 0x10)//Mode Button
+            {
+                Current_Display_Mode = STOP_WATCH_MODE;
+               
+            }
+            else if (UART_Buffer[1] == 0x20) //Edit Mode Button
+            {
+                Current_Display_Mode = EDIT_MODE;
+            }
+            else
+            {
+				//idle M
+                UART_Buffer[1] = IDLE_MESSAGE;
+            }
+	}
+}
 
 /*** task to write the date and time on lcd ***/
 void Write_Date_Time_Task()
 {
 	/******** to get the mode bit from the received buffer from uart***/
-	Current_Display_Mode = (modecomm & 1 << 6);
+	//Current_Display_Mode = (modecomm & 1 << 6);
 	/*to clear the display at the first time of this task */
 	if (Current_Display_Mode == DATE_TIME_MODE)
 	{
 		if (Change_Of_Time == CHANGED)
 		{
-			LCD_Clear_Display_Asynch();
-			/**** to init the cursor position */
-			LCD_Set_Cursor_Asynch(0, 0);
-			/* to print the date : YEAR/MONTH/DAY */
-			LCD_Wrtite_Number_Asynch(Date.Year);
-			LCD_Set_Cursor_Asynch(0, 5);
-			// LCD_Write_Data('/');
-			LCD_Wrtite_Number_Asynch(Date.Month);
-			LCD_Set_Cursor_Asynch(0, 7);
-			// LCD_Write_Data('/');
-			LCD_Wrtite_Number_Asynch(Date.Day);
 
-			/* Set the cursor on the second Line */
-			LCD_Set_Cursor_Asynch(1, 0);
-
-			/* to print the Time : HOURS:MINUTES:SECONDS */
-			LCD_Wrtite_Number_Asynch(Time.Hours);
-			// LCD_Write_Data(':');
-			LCD_Set_Cursor_Asynch(1, 3);
-			LCD_Wrtite_Number_Asynch(Time.Minutes);
-			// LCD_Write_Data(':');
-			LCD_Set_Cursor_Asynch(1, 6);
-			LCD_Wrtite_Number_Asynch(Time.Seconds);
+			Display_Date_Time_Helper();
 			Change_Of_Time = NOT_CHANGED;
 		}
-		/******** to find if the edit bit equal 1 ************/
-		if (modecomm & 1 << 7)
+	
+		}
+		else if (Current_Display_Mode == STOP_WATCH_MODE)
 		{
-			switch (UART_Buffer)
+			void Display_Stop_Watch_Helper();	
+		}
+		else if (Current_Display_Mode==EDIT_MODE){
+			/******** to find if the edit bit equal 1 ************/
+	
+			switch (UART_Buffer[1])
 			{
 			case RIGHT:
 
@@ -398,6 +409,7 @@ void Write_Date_Time_Task()
 					Time.Seconds++;
 				}
 				Handle_Time_Edit();
+				Display_Date_Time_Helper();
 				break;
 
 			case DEC:
@@ -428,14 +440,51 @@ void Write_Date_Time_Task()
 				}
 				Handle_Time_Edit();
 				break;
+
+				case OK:
+				Current_Display_Mode = DATE_TIME_MODE;
+				break;
+
 			}
 		}
-		else if (Current_Display_Mode == STOP_WATCH_MODE)
-		{
-			LCD_Clear_Display_Asynch();
 		}
+	
+
+	void Display_Stop_Watch_Helper(){
+		LCD_Clear_Display_Asynch();
+			LCD_Set_Cursor_Asynch(0, 4);
+			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Hours);
+			LCD_Set_Cursor_Asynch(0, 7);
+			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Minutes);
+			LCD_Set_Cursor_Asynch(0,10);
+			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Seconds);	
 	}
-}
+
+	void Display_Date_Time_Helper(){
+		LCD_Clear_Display_Asynch();
+			/**** to init the cursor position */
+			LCD_Set_Cursor_Asynch(0, 0);
+			/* to print the date : YEAR/MONTH/DAY */
+			LCD_Wrtite_Number_Asynch(Date.Year);
+			LCD_Set_Cursor_Asynch(0, 5);
+			// LCD_Write_Data('/');
+			LCD_Wrtite_Number_Asynch(Date.Month);
+			LCD_Set_Cursor_Asynch(0, 7);
+			// LCD_Write_Data('/');
+			LCD_Wrtite_Number_Asynch(Date.Day);
+
+			/* Set the cursor on the second Line */
+			LCD_Set_Cursor_Asynch(1, 0);
+
+			/* to print the Time : HOURS:MINUTES:SECONDS */
+			LCD_Wrtite_Number_Asynch(Time.Hours);
+			// LCD_Write_Data(':');
+			LCD_Set_Cursor_Asynch(1, 3);
+			LCD_Wrtite_Number_Asynch(Time.Minutes);
+			// LCD_Write_Data(':');
+			LCD_Set_Cursor_Asynch(1, 6);
+			LCD_Wrtite_Number_Asynch(Time.Seconds);
+	}
 	// task every 1000 miliSecond
 	void Sec_Increment_Task(void)
 	{
