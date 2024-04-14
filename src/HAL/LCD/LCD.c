@@ -31,6 +31,8 @@
 #define CHANGED 1
 #define NOT_CHANGED 0
 
+
+
 /********** macros to position *********/
 #define LEFT 0x50
 #define RIGHT 0x60
@@ -44,14 +46,17 @@ void Init_Sm();
 
 void LCD_Write_Command(uint8_t Command);
 
-void Handle_Time_Edit();
+void Handle_Time_Edit_For_Date_Time_Mode();
 
+void Handle_Time_Edit_For_Stop_Watch_Mode();
 
 void Display_Date_Time_Helper();
 
 void Display_Stop_Watch_Helper();
 
-void Sec_Increment_Task(void);
+void Sec_Increment_Task_For_Date_Time(void);
+
+
 void LCD_Write_Data(uint8_t Data);
 
 void LCD_Write_String_Helper(void);
@@ -303,13 +308,17 @@ uint8_t UART_Buffer[2] = {0};
 
 uint8_t Change_Of_Time = CHANGED;
 
+/// flag for the stop watch to start counting or to continue
+uint8_t Begin=0;
+
+/// task every 120 m
 void Switches(void){
 	if(Current_Display_Mode== DATE_TIME_MODE){
 		//// UARTFARME[1] is the recievied command from the uart 
 		 if (UART_Buffer[1] == 0x10)//Mode Button
             {
                 Current_Display_Mode = STOP_WATCH_MODE;
-               
+                void Display_Stop_Watch_Helper();
             }
             else if (UART_Buffer[1] == 0x20) //Edit Mode Button
             {
@@ -320,6 +329,20 @@ void Switches(void){
 				//idle M
                 UART_Buffer[1] = IDLE_MESSAGE;
             }
+	}
+	else if (Current_Display_Mode == STOP_WATCH_MODE){
+		//// Begin Button
+		if(UART_Buffer[1] == 0x30){
+			Begin=1;
+		}
+		// Mode Button 
+		else if(UART_Buffer[1] == 0x10){
+			Current_Display_Mode= DATE_TIME_MODE;
+		}
+		// stop button 
+		else if (UART_Buffer[1]==0x40){
+			Begin=0;
+		}
 	}
 }
 
@@ -452,12 +475,12 @@ void Write_Date_Time_Task()
 
 	void Display_Stop_Watch_Helper(){
 		LCD_Clear_Display_Asynch();
-			LCD_Set_Cursor_Asynch(0, 4);
-			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Hours);
-			LCD_Set_Cursor_Asynch(0, 7);
-			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Minutes);
-			LCD_Set_Cursor_Asynch(0,10);
-			LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Seconds);	
+		LCD_Set_Cursor_Asynch(0, 4);
+		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Hours);
+		LCD_Set_Cursor_Asynch(0, 7);
+		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Minutes);
+		LCD_Set_Cursor_Asynch(0,10);
+		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Seconds);	
 	}
 
 	void Display_Date_Time_Helper(){
@@ -486,15 +509,49 @@ void Write_Date_Time_Task()
 			LCD_Wrtite_Number_Asynch(Time.Seconds);
 	}
 	// task every 1000 miliSecond
-	void Sec_Increment_Task(void)
+	void Sec_Increment_Task_For_Date_Time(void)
 	{
-		Time.Seconds++;
+		Handle_Time_Edit_For_Date_Time_Mode();
 		Change_Of_Time = CHANGED;
-		Handle_Time_Edit();
 	}
 
-	void Handle_Time_Edit()
+	void Sec_Increment_Task_For_Stop_Watch(void)
 	{
+		Handle_Time_Edit_For_Stop_Watch_Mode();
+	}
+
+	
+void Handle_Time_Edit_For_Stop_Watch_Mode(){
+	Stop_Watch_Time.Seconds++;
+	if(Begin==1){
+	if (Stop_Watch_Time.Seconds == 60)
+		{
+			Stop_Watch_Time.Minutes++;
+			Stop_Watch_Time.Seconds = 0;
+		}
+		else
+		{
+			// do nothing
+		}
+		if (Stop_Watch_Time.Minutes == 60)
+		{
+			Stop_Watch_Time.Hours++;
+			Stop_Watch_Time.Minutes = 0;
+		}
+		else
+		{
+			// do nothing
+		}
+	}
+	if(Current_Display_Mode == STOP_WATCH_MODE){
+	void Display_Stop_Watch_Helper();
+	}
+}
+
+
+	void Handle_Time_Edit_For_Date_Time_Mode()
+	{
+		Time.Seconds++;
 		if (Time.Seconds == 60)
 		{
 			Time.Minutes++;
