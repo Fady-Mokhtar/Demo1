@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "lcd.h": "c",
+        "gpio.h": "c",
+        "keypad.h": "c",
+        "nvic.h": "c",
+        "stm32f401cc.h": "c"
+    }
+}
