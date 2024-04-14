@@ -338,10 +338,14 @@ void Switches(void){
 		// Mode Button 
 		else if(UART_Buffer[1] == 0x10){
 			Current_Display_Mode= DATE_TIME_MODE;
+			Change_Of_Time = CHANGED;
 		}
 		// stop button 
 		else if (UART_Buffer[1]==0x40){
 			Begin=0;
+		}
+		else{
+			UART_Buffer[1] = IDLE_MESSAGE;
 		}
 	}
 }
@@ -364,7 +368,7 @@ void Write_Date_Time_Task()
 		}
 		else if (Current_Display_Mode == STOP_WATCH_MODE)
 		{
-			void Display_Stop_Watch_Helper();	
+			//void Display_Stop_Watch_Helper();	
 		}
 		else if (Current_Display_Mode==EDIT_MODE){
 			/******** to find if the edit bit equal 1 ************/
@@ -431,7 +435,7 @@ void Write_Date_Time_Task()
 				{
 					Time.Seconds++;
 				}
-				Handle_Time_Edit();
+				Handle_Time_Edit_For_Date_Time_Mode();
 				Display_Date_Time_Helper();
 				break;
 
@@ -466,9 +470,12 @@ void Write_Date_Time_Task()
 
 				case OK:
 				Current_Display_Mode = DATE_TIME_MODE;
+				Change_Of_Time = CHANGED;
 				break;
 
 			}
+			// to reset the received byte from the UARt
+			UART_Buffer[1]=IDLE_MESSAGE;
 		}
 		}
 	
@@ -522,8 +529,8 @@ void Write_Date_Time_Task()
 
 	
 void Handle_Time_Edit_For_Stop_Watch_Mode(){
-	Stop_Watch_Time.Seconds++;
 	if(Begin==1){
+		Stop_Watch_Time.Seconds++;
 	if (Stop_Watch_Time.Seconds == 60)
 		{
 			Stop_Watch_Time.Minutes++;
@@ -542,6 +549,9 @@ void Handle_Time_Edit_For_Stop_Watch_Mode(){
 		{
 			// do nothing
 		}
+	}
+	else{
+		//do noting
 	}
 	if(Current_Display_Mode == STOP_WATCH_MODE){
 	void Display_Stop_Watch_Helper();
