@@ -14,7 +14,7 @@
 
 //#define LED_TASKS	3
 
-#define LCD_TASKS   3
+#define LCD_TASKS   5
 
 #define KPD_TASKS   1
 

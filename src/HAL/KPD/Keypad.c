@@ -8,10 +8,10 @@
 #define BTN_PRESSED 1
 
 #define DATE_TIME_MODE 0
-#define EDIT_MODE 1
-#define STOP_WATCH_MODE 2
+#define STOP_WATCH_MODE 3
 
-#define IDLE_MESSAGE 0X01
+
+
 
 static uint8_t input = 0;
 static uint8_t *PTR_TO_Input = &input;
@@ -27,13 +27,13 @@ static Keypad_Errorstates_t IsPressed(uint8_t Row_No, uint8_t Column_No, uint8_t
  * array of two first byte start second byte input from get value send to uart
  *
  */
-volatile uint8_t UARTFARME[2] = {0x55, 0};
+volatile uint8_t UARTFARME[2] = {START_OF_FRAME, IDLE_MESSAGE};
 //uint8_t UARTFARME[1] = &UARTFARME[1];
 
 static const uint8_t keypad_values[No_of_Desired_Rows][No_of_Desired_Columns] = {
-    {0x10, 0x70, 0x20},
-    {0x50, 0x90, 0x60},
-    {0x30, 0x80, 0x40}};
+    {CHANGE_MODE, INCREMENT, EDIT_MODE},
+    {RIGHT, OK, LEFT},
+    {START, DECREMENT, STOP}};
 /*
         btns layout={MODE,INCREMENT,EDIT},
                     {RIGHT,OK,LEFT},
@@ -54,13 +54,13 @@ void keypad_runnable(void)
         case DATE_TIME_MODE:
             // LED_SetStatus(LED_1,LED_ON);
             Keypad_get_value();
-            if (*PTR_TO_Input == 0x10)
+            if (*PTR_TO_Input == CHANGE_MODE)
             {
                 KeypadCurrentMode = STOP_WATCH_MODE;
                 UARTFARME[1] = *PTR_TO_Input;
                 // send UARTFRAME
             }
-            else if (*PTR_TO_Input == 0x20)
+            else if (*PTR_TO_Input == EDIT_MODE)
             {
                 KeypadCurrentMode = EDIT_MODE;
                 UARTFARME[1] = *PTR_TO_Input;
@@ -73,12 +73,12 @@ void keypad_runnable(void)
         case STOP_WATCH_MODE:
             // LED_SetStatus(LED_2,LED_ON);
             Keypad_get_value();
-            if (*PTR_TO_Input == 0x10)
+            if (*PTR_TO_Input == CHANGE_MODE)
             {
                 KeypadCurrentMode = DATE_TIME_MODE;
                 UARTFARME[1] = *PTR_TO_Input;
             }
-            else if (*PTR_TO_Input == 0x30 || *PTR_TO_Input == 0x40)
+            else if (*PTR_TO_Input == START || *PTR_TO_Input == STOP)
             {
                 UARTFARME[1] = *PTR_TO_Input;
             }
@@ -90,12 +90,12 @@ void keypad_runnable(void)
         case EDIT_MODE:
             // LED_SetStatus(LED_3,LED_ON);
             Keypad_get_value();
-            if (*PTR_TO_Input == 0x90)
+            if (*PTR_TO_Input == OK)
             {
                 UARTFARME[1] = *PTR_TO_Input;
                 KeypadCurrentMode = DATE_TIME_MODE;
             }
-            else if (*PTR_TO_Input == 0x50 || *PTR_TO_Input == 0x60 || *PTR_TO_Input == 0x70 || *PTR_TO_Input == 0x80)
+            else if (*PTR_TO_Input == LEFT || *PTR_TO_Input == RIGHT || *PTR_TO_Input == INCREMENT || *PTR_TO_Input == DECREMENT)
             {
                 UARTFARME[1] = *PTR_TO_Input;
             }
@@ -192,6 +192,7 @@ static Keypad_Errorstates_t IsPressed(uint8_t Row_No, uint8_t Column_No, uint8_t
     else
     {
         count[Row_No][Column_No] = 0;
+        *PTR_TO_Input = IDLE_MESSAGE;
     }
     if ((count[Row_No][Column_No]) % 5 == 0 && BTN_state[Row_No][Column_No])
     {

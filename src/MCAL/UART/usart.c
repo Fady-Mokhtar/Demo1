@@ -323,9 +323,9 @@ void USART_sendByte_polling(USART_ManagerStruct *usartxManger, const uint8_t dat
 	 */
 
 	// stop while the TX line is full  (wait while the TXE flag is clear)
-	while (BIT_IS_CLEAR(usartxManger->Instance->SR, USART_SR_TXE_Pos))
+	while ((usartxManger->Instance->SR & USART_SR_TXE) == 0)
 	{
-	}
+	} 
 
 	// writing the data in the data Register DR
 	usartxManger->Instance->DR = data;
@@ -608,7 +608,7 @@ MCALStatus_t USART_Transmit_DMA(USART_ManagerStruct *huart, const uint8_t *pData
 	// huart->hdmatx->XferAbortCallback = NULL;
 
 	/* Enable the UART transmit DMA stream */
-	DMA_Start_IT(huart->hdmatx, (uint32_t)pData, (uint32_t)&huart->Instance->DR, Size);
+	DMA_Start_IT(huart->hdmatx, (uint32_t)(pData+1), (uint32_t)&huart->Instance->DR, Size-1);
 
 	/* Clear the TC flag in the USART SR register by writing 0 to it */
 	(huart)->Instance->SR = ~(UART_FLAG_TC);
@@ -616,6 +616,14 @@ MCALStatus_t USART_Transmit_DMA(USART_ManagerStruct *huart, const uint8_t *pData
 	/* Enable the DMA transfer for transmit request by setting the DMAT bit
 		in the UART CR3 register */
 	ATOMIC_SET_BIT(huart->Instance->CR3, USART_CR3_DMAT);
+
+	// sending the 1st byte by polling then the DMA will send the rest of the buffer from the 2nd byte 
+	// we may need a while loop before sending to check the flag like in polling func we use if cond instead
+	if (huart->Instance->SR & USART_SR_TXE)
+	{
+		huart->Instance->DR = *pData;
+	}
+	
 
 	return MCAL_OK;
 }
