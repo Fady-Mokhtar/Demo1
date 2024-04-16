@@ -1,5 +1,8 @@
 
-#include "Keypad.h"
+#include"port.h"
+#include"Keypad_cfg.h"
+#include"Keypad.h"
+#include"led.h"
 
 #define NOT_INIT_State 0
 #define OPERATIONAL_STATE 1
@@ -13,24 +16,24 @@
 
 
 
-static uint8_t input = 0;
-static uint8_t *PTR_TO_Input = &input;
-static uint8_t Keypadstate = NOT_INIT_State;
-static uint8_t KeypadCurrentMode = DATE_TIME_MODE;
-static uint8_t BTN_state[No_of_Desired_Rows][No_of_Desired_Columns] = {0};
+static u8 input = 0;
+static u8 *PTR_TO_Input = &input;
+static u8 Keypadstate = NOT_INIT_State;
+static u8 KeypadCurrentMode = DATE_TIME_MODE;
+static u8 BTN_state[No_of_Desired_Rows][No_of_Desired_Columns] = {0};
 
 static Keypad_Errorstates_t Keypad_init();
 static Keypad_Errorstates_t Keypad_get_value();
-static Keypad_Errorstates_t IsPressed(uint8_t Row_No, uint8_t Column_No, uint8_t *switch_current_state);
+static Keypad_Errorstates_t IsPressed(u8 keypad_num,u8 Row_No,u8 Column_No,u32 *switch_current_state);
 
 /*
  * array of two first byte start second byte input from get value send to uart
  *
  */
-volatile uint8_t UARTFARME[2] = {START_OF_FRAME, IDLE_MESSAGE};
+volatile u8 UARTFARME[2] = {START_OF_FRAME, IDLE_MESSAGE};
 //uint8_t UARTFARME[1] = &UARTFARME[1];
 
-static const uint8_t keypad_values[No_of_Desired_Rows][No_of_Desired_Columns] = {
+static const u8 keypad_values[No_of_Desired_Rows][No_of_Desired_Columns] = {
     {CHANGE_MODE, INCREMENT, EDIT_MODE},
     {RIGHT, OK, LEFT},
     {START, DECREMENT, STOP}};
@@ -46,13 +49,18 @@ void keypad_runnable(void)
     {
     case NOT_INIT_State:
         Keypad_init();
+        LED_Init();
         Keypadstate = OPERATIONAL_STATE;
         break;
     case OPERATIONAL_STATE:
+   
         switch (KeypadCurrentMode)
         {
         case DATE_TIME_MODE:
-            // LED_SetStatus(LED_1,LED_ON);
+            LED_SetStatus(LED_1, LED_ON);
+              LED_SetStatus(LED_2, LED_OFF);
+             LED_SetStatus(LED_3, LED_OFF);
+              LED_SetStatus(LED_4, LED_OFF);
             Keypad_get_value();
             if (*PTR_TO_Input == CHANGE_MODE)
             {
@@ -71,7 +79,10 @@ void keypad_runnable(void)
             }
             break;
         case STOP_WATCH_MODE:
-            // LED_SetStatus(LED_2,LED_ON);
+            LED_SetStatus(LED_1, LED_OFF);
+              LED_SetStatus(LED_2, LED_ON);
+             LED_SetStatus(LED_3, LED_OFF);
+              LED_SetStatus(LED_4, LED_OFF);
             Keypad_get_value();
             if (*PTR_TO_Input == CHANGE_MODE)
             {
@@ -88,6 +99,10 @@ void keypad_runnable(void)
             }
             break;
         case EDIT_MODE:
+            LED_SetStatus(LED_1, LED_OFF);
+            LED_SetStatus(LED_2, LED_OFF);
+            LED_SetStatus(LED_3, LED_ON);
+            LED_SetStatus(LED_4, LED_OFF);
             // LED_SetStatus(LED_3,LED_ON);
             Keypad_get_value();
             if (*PTR_TO_Input == OK)
@@ -98,6 +113,7 @@ void keypad_runnable(void)
             else if (*PTR_TO_Input == LEFT || *PTR_TO_Input == RIGHT || *PTR_TO_Input == INCREMENT || *PTR_TO_Input == DECREMENT)
             {
                 UARTFARME[1] = *PTR_TO_Input;
+                LED_SetStatus(LED_4, LED_ON);
             }
             else
             {
@@ -114,91 +130,97 @@ void keypad_runnable(void)
     }
 }
 
-extern GPIO_StrCfg_t Keypad_row_pins[__NUM_OF_PINS_KPD_ROWS];
-extern GPIO_StrCfg_t Keypad_Column_pins[__NUM_OF_PINS_KPD_COLS];
-
 Keypad_Errorstates_t Keypad_init()
 {
+    
+    Keypad_Errorstates_t ret_Errorstate=KEYPAD_OK;
+    GPIO_PinConfig_t Keypad_row_pins;
+    GPIO_PinConfig_t Keypad_Column_pins; 
+    Keypad_row_pins.Speed=GPIO_HIGH_SPEED;
+    Keypad_Column_pins.Speed=GPIO_HIGH_SPEED; 
+    for(u8 LOC_iterartor=0;LOC_iterartor<NO_OF_KEYPADS;LOC_iterartor++)
+    {
+        for(u8 Nested_LOC_iterartor=0;Nested_LOC_iterartor<No_of_Desired_Rows;Nested_LOC_iterartor++)
+        {
+           Keypad_row_pins.Port=KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PORT;
+           Keypad_row_pins.Pin=KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PIN;
+           Keypad_row_pins.Mode=KeyPad_CFG[LOC_iterartor].ROWS_Default_state;
+           Keypad_Column_pins.Port=KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor].PORT;
+           Keypad_Column_pins.Pin=KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor].PIN;
+           Keypad_Column_pins.Mode=KeyPad_CFG[LOC_iterartor].Columns_Default_state;
+           if(Keypad_row_pins.Mode==GPIO_OUTPUT_PP)
+           {
+            GPIO_InitPin(&Keypad_row_pins);
+            GPIO_Set_PinValue(Keypad_row_pins.Port,Keypad_row_pins.Pin,KeyPad_CFG[LOC_iterartor].ROWS_Column_Output_state);
+           }
+           else
+           {
+            GPIO_InitPin(&Keypad_row_pins);
+           }
+            if(Keypad_Column_pins.Mode==GPIO_OUTPUT_PP)
+           {
+            GPIO_InitPin(&Keypad_Column_pins);
+            GPIO_Set_PinValue(Keypad_Column_pins.Port,Keypad_Column_pins.Pin,KeyPad_CFG[LOC_iterartor].ROWS_Column_Output_state);
+           }
+           else
+           {
+            GPIO_InitPin(&Keypad_Column_pins);
+           }
 
-    Keypad_Errorstates_t ret_Errorstate = KEYPAD_OK;
+        }
 
-    GPIO_Init(&Keypad_row_pins, __NUM_OF_PINS_KPD_ROWS);
-    GPIO_Init(&Keypad_Column_pins, __NUM_OF_PINS_KPD_COLS);
-
-    // GPIO_StrCfg_t Keypad_row_pins;
-    // GPIO_StrCfg_t Keypad_Column_pins;
-    // Keypad_row_pins.speed = GPIO_SPEED_High;
-    // Keypad_Column_pins.speed = GPIO_SPEED_High;
-    // for (uint8_t LOC_iterartor = 0; LOC_iterartor < NO_OF_KEYPADS; LOC_iterartor++)
-    // {
-    //     for (uint8_t Nested_LOC_iterartor = 0; Nested_LOC_iterartor < No_of_Desired_Rows; Nested_LOC_iterartor++)
-    //     {
-    //         Keypad_row_pins.port = KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PORT;
-    //         Keypad_row_pins.pin = KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PIN;
-    //         Keypad_row_pins.mode = KeyPad_CFG[LOC_iterartor].ROWS_Default_state;
-    //         Keypad_Column_pins.port = KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor].PORT;
-    //         Keypad_Column_pins.pin = KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor].PIN;
-    //         Keypad_Column_pins.mode = KeyPad_CFG[LOC_iterartor].Columns_Default_state;
-    //     }
-
-    //     if (Keypad_row_pins.mode == GPIO_MODE_Output)
-    //     {
-    //         GPIO_Init(&Keypad_row_pins, __NUM_OF_PINS_KPD/2);
-    //     }
-    //     else
-    //     {
-    //         GPIO_Init(&Keypad_Column_pins, __NUM_OF_PINS_KPD/2);
-    //     }
-    // }
-
+    }
+    
     return ret_Errorstate;
 }
 Keypad_Errorstates_t Keypad_get_value()
 {
-
-    Keypad_Errorstates_t ret_Errorstate = KEYPAD_OK;
-    uint8_t LOC_TEMP = 0;
-    uint8_t *ptr_to_local_value = &LOC_TEMP;
-    for (uint8_t LOC_iterartor = 0; LOC_iterartor < NO_OF_KEYPADS; LOC_iterartor++)
+  
+    Keypad_Errorstates_t ret_Errorstate=KEYPAD_OK; 
+    u32 LOC_TEMP=0;
+    u32 *ptr_to_local_value=&LOC_TEMP;
+    for(u8 LOC_iterartor=0;LOC_iterartor<NO_OF_KEYPADS;LOC_iterartor++)
     {
-
-        for (uint8_t Nested_LOC_iterartor_1 = 0; Nested_LOC_iterartor_1 < No_of_Desired_Rows; Nested_LOC_iterartor_1++)
+        
+        for(u8 Nested_LOC_iterartor_1=0;Nested_LOC_iterartor_1<No_of_Desired_Rows;Nested_LOC_iterartor_1++)
         {
-            for (uint8_t Nested_LOC_iterartor = 0; Nested_LOC_iterartor < No_of_Desired_Rows; Nested_LOC_iterartor++)
+            for(u8 Nested_LOC_iterartor=0;Nested_LOC_iterartor<No_of_Desired_Rows;Nested_LOC_iterartor++)
             {
-                GPIO_SetPinState(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PORT, KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PIN, GPIO_PINSTATE_LOW);
+                GPIO_Set_PinValue(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PORT,KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor].PIN,GPIO_LOW);
             }
-            GPIO_SetPinState(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_1].PORT, KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_1].PIN, GPIO_PINSTATE_HIGH);
-            for (uint8_t Nested_LOC_iterartor_2 = 0; Nested_LOC_iterartor_2 < No_of_Desired_Columns; Nested_LOC_iterartor_2++)
+            GPIO_Set_PinValue(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_1].PORT,KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_1].PIN,GPIO_HIGH);
+            for ( u8 Nested_LOC_iterartor_2=0; Nested_LOC_iterartor_2<No_of_Desired_Columns;Nested_LOC_iterartor_2++)
             {
 
-                GPIO_GetPinState(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_2].PORT, KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor_2].PIN, ptr_to_local_value);
-                IsPressed(Nested_LOC_iterartor_1, Nested_LOC_iterartor_2, ptr_to_local_value);
+                GPIO_GetPinValue(KeyPad_CFG[LOC_iterartor].KeyPad_Rows_Connection_CFG[Nested_LOC_iterartor_2].PORT,KeyPad_CFG[LOC_iterartor].KeyPad_Columns_Connection_CFG[Nested_LOC_iterartor_2].PIN,ptr_to_local_value);
+                IsPressed(LOC_iterartor,Nested_LOC_iterartor_1,Nested_LOC_iterartor_2,ptr_to_local_value);
             }
-        }
+         }
     }
     return ret_Errorstate;
 }
-static Keypad_Errorstates_t IsPressed(uint8_t Row_No, uint8_t Column_No, uint8_t *switch_current_state)
+static Keypad_Errorstates_t IsPressed(u8 keypad_num,u8 Row_No,u8 Column_No,u32 *switch_current_state)
 {
-    Keypad_Errorstates_t ret_Errorstate = KEYPAD_OK;
-    static uint8_t count[No_of_Desired_Rows][No_of_Desired_Columns] = {0};
-    static uint8_t past_value[No_of_Desired_Rows][No_of_Desired_Columns] = {0};
-    if (*switch_current_state == past_value[Row_No][Column_No])
+    Keypad_Errorstates_t ret_Errorstate=KEYPAD_OK;
+    static u8 count[No_of_Desired_Rows][No_of_Desired_Columns]={0};
+    static u8 past_value[No_of_Desired_Rows][No_of_Desired_Columns]={0};
+    if(*switch_current_state==past_value[Row_No][Column_No])
     {
-        count[Row_No][Column_No] = (count[Row_No][Column_No]) + 1;
-        BTN_state[Row_No][Column_No] = *switch_current_state;
+        count[Row_No][Column_No]=(count[Row_No][Column_No])+1;
+        BTN_state[Row_No][Column_No]=*switch_current_state;
     }
     else
     {
-        count[Row_No][Column_No] = 0;
-        *PTR_TO_Input = IDLE_MESSAGE;
+       count[Row_No][Column_No]=0;
+       *PTR_TO_Input=IDLE_MESSAGE;
     }
-    if ((count[Row_No][Column_No]) % 5 == 0 && BTN_state[Row_No][Column_No])
+    if((count[Row_No][Column_No])%5==0&&BTN_state[Row_No][Column_No])
     {
-        *PTR_TO_Input = keypad_values[Row_No][Column_No];
+        *PTR_TO_Input=keypad_values[Row_No][Column_No];
     }
-    past_value[Row_No][Column_No] = *switch_current_state;
+    past_value[Row_No][Column_No]=*switch_current_state;
 
     return ret_Errorstate;
 }
+
+

@@ -1,7 +1,10 @@
+
 #ifndef _KEYPAD_CFG_H_
 #define _KEYPAD_CFG_H_
 
-#include "Keypad.h"
+
+#include "std_types.h"
+
 
 #define NO_OF_KEYPADS           1
 #define FIRST_KEYPAD            0
@@ -28,7 +31,7 @@ typedef enum
 
 typedef struct
 {
-	uint32_t PIN;
+	u32 PIN;
 	void* PORT;
 }KeyPad_Connection_CFG_t;
 
@@ -36,10 +39,10 @@ typedef struct
 typedef struct
 {
     KeyPad_Connection_CFG_t KeyPad_Rows_Connection_CFG[No_of_Desired_Rows];
-    uint32_t ROWS_Default_state;
+    u32 ROWS_Default_state;
     KeyPad_Connection_CFG_t KeyPad_Columns_Connection_CFG[No_of_Desired_Columns];
-    uint32_t Columns_Default_state;
-    uint32_t ROWS_Column_Output_state;//basedon ur keypad configuration
+    u32 Columns_Default_state;
+    u32 ROWS_Column_Output_state;//basedon ur keypad configuration
 
 }KeyPad_CFG_t;
 

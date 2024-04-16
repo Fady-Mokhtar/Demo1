@@ -4,6 +4,7 @@
         "gpio.h": "c",
         "keypad.h": "c",
         "nvic.h": "c",
-        "stm32f401cc.h": "c"
+        "stm32f401cc.h": "c",
+        "keypad_cfg.h": "c"
     }
 }

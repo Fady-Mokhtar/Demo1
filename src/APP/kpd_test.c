@@ -2,8 +2,8 @@
 /************************************************Includes************************************************/
 /********************************************************************************************************/
 
-#define demo_test
-#ifdef demo_test
+//#define kpd_test
+#ifdef kpd_test
 
 /* Includes ------------------------------------------------------------------*/
 #include "std_types.h"
@@ -67,18 +67,18 @@ int main(void)
 {
 
     /* Initialize all configured peripherals */
-    //GPIO_Init(Loc_arrStrGpios, __NUM_OF_PINS_DEMO);
-    GPIO_Init(Loc_DMAGpios, __NUM_OF_PINS_DMA);
-    LCD_Init_Asynch();
+    // GPIO_Init(Loc_arrStrGpios, __NUM_OF_PINS_DEMO);
+    // GPIO_Init(Loc_DMAGpios, __NUM_OF_PINS_DMA);
+    // LCD_Init_Asynch();
     Enable_Interrupts();
 
-    USART_Init(&usart1Manager);
+    // USART_Init(&usart1Manager);
 
-    DMA_Init(&dma2Manager_stream2_usart1_rx);
-    DMA_Init(&dma2Manager_stream7_usart1_tx);
+    // DMA_Init(&dma2Manager_stream2_usart1_rx);
+    // DMA_Init(&dma2Manager_stream7_usart1_tx);
 
-    NVIC_EnableIRQ(DMA2_Stream2_IRQn);
-    NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+    // NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+    // NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
     sched_init();
     sched_start();
@@ -101,62 +101,7 @@ int main(void)
     USART_Receive_DMA(&usart1Manager, &UART_Buffer, (uint16_t)0x02);
     for(int i=0; i<800000; i++);
     
-    // while (1)
-    // {
-    //     if (rx_frame[0] == Start_Of_Frame)
-    //     {
-    //         switch (rx_frame[1])
-    //         {
-    //         case Change_Mode:
-    //             // change mode
-    //             g_lcdCommand = Change_Mode;
-    //             break;
-    //         case Edit_Mode:
-    //             // edit mode
-    //             g_lcdCommand = Edit_Mode;
-    //             break;
-    //         case Start:
-    //             // start
-    //             g_lcdCommand = Start;
-    //             break;
-    //         case Stop:
-    //             // stop
-    //             g_lcdCommand = Stop;
-    //             break;
-    //         case Left:
-    //             // left
-    //             g_lcdCommand = Left;
-    //             break;
-    //         case Right:
-    //             // right
-    //             g_lcdCommand = Right;
-    //             break;
-    //         case Increment:
-    //             // increment
-    //             g_lcdCommand = Increment;
-    //             break;
-    //         case Decrement:
-    //             // decrement
-    //             g_lcdCommand = Decrement;
-    //             break;
-    //         case Ok:
-    //             // ok
-    //             break;
 
-    //         default:
-    //             while(1)
-    //             {
-    //                 // wrong input
-    //             }
-    //             break;
-    //         }
-    //         // success
-    //         while (1)
-    //         {
-
-    //         }
-    //     }
-    // }
 
     return 0;
 }

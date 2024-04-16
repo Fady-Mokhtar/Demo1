@@ -1,9 +1,6 @@
+
 #ifndef _KEYPAD_H_
 #define _KEYPAD_H_
-
-#include "std_types.h"
-#include "GPIO.h"
-#include "Keypad_cfg.h"
 
 #define IDLE_MESSAGE    0X01
 #define START_OF_FRAME  0x55

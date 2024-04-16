@@ -20,7 +20,7 @@
 
 #define UART_TASKS  2
 
-#define MAX_SUPPORTED_TASKS     (LCD_TASKS + KPD_TASKS + UART_TASKS)
+#define MAX_SUPPORTED_TASKS     (KPD_TASKS)
 
 
 
