@@ -14,13 +14,13 @@
 
 //#define LED_TASKS	3
 
-#define LCD_TASKS   5
+#define LCD_TASKS   6
 
 #define KPD_TASKS   1
 
 #define UART_TASKS  2
 
-#define MAX_SUPPORTED_TASKS     (KPD_TASKS)
+#define MAX_SUPPORTED_TASKS     (LCD_TASKS)
 
 
 

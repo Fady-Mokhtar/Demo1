@@ -9,6 +9,7 @@
 #include "std_types.h"
 #include "rcc.h"
 #include "gpio.h"
+#include "port.h"
 #include "usart.h"
 #include "dma.h"
 #include "stk.h"
@@ -68,17 +69,18 @@ int main(void)
 
     /* Initialize all configured peripherals */
     //GPIO_Init(Loc_arrStrGpios, __NUM_OF_PINS_DEMO);
-    GPIO_Init(Loc_DMAGpios, __NUM_OF_PINS_DMA);
-    LCD_Init_Asynch();
+    //GPIO_Init(Loc_DMAGpios, __NUM_OF_PINS_DMA);
+    RCC_enableAHB1Peripheral(RCC_AHB1PERIPHERAL_GPIOA);
     Enable_Interrupts();
+    LCD_Init_Asynch();
 
-    USART_Init(&usart1Manager);
+    // USART_Init(&usart1Manager);
 
-    DMA_Init(&dma2Manager_stream2_usart1_rx);
-    DMA_Init(&dma2Manager_stream7_usart1_tx);
+    // DMA_Init(&dma2Manager_stream2_usart1_rx);
+    // DMA_Init(&dma2Manager_stream7_usart1_tx);
 
-    NVIC_EnableIRQ(DMA2_Stream2_IRQn);
-    NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+    // NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+    // NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
     sched_init();
     sched_start();
@@ -90,16 +92,16 @@ int main(void)
 
     // transmit
     //uint8_t tx_frame[2] = {Start_Of_Frame, Change_Mode};
-    for(int i=0; i<200000; i++);
-    USART_Transmit_DMA(&usart1Manager, &UARTFARME, (uint16_t)0x02);
-    // while(1)
-    // {
+    // for(int i=0; i<200000; i++);
+    // USART_Transmit_DMA(&usart1Manager, &UARTFARME, (uint16_t)0x02);
+    // // while(1)
+    // // {
     
-    // }
-    // receive
-    //uint8_t rx_frame[2] = {0};
-    USART_Receive_DMA(&usart1Manager, &UART_Buffer, (uint16_t)0x02);
-    for(int i=0; i<800000; i++);
+    // // }
+    // // receive
+    // //uint8_t rx_frame[2] = {0};
+    // USART_Receive_DMA(&usart1Manager, &UART_Buffer, (uint16_t)0x02);
+    // for(int i=0; i<800000; i++);
     
     // while (1)
     // {

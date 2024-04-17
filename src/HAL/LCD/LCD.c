@@ -40,7 +40,7 @@
 
  void LCD_Write_Command(uint8_t Command);
 
-
+ void LCD_Test(void);
  void LCD_Test_2(){
 
  }
