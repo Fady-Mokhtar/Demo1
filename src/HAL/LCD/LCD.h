@@ -2,7 +2,7 @@
 #define LCD_H_
 
 #include "STD_TYPES.h"
-#include "GPIO.h"
+#include "port.h"
 
 typedef struct {
 	void * port;
