@@ -2,7 +2,7 @@
 
 /****************** macros for lcd commands ************/
 #define LCD_FUNCTION_SET_MASK		0x38
-#define LCD_DISPLAY_ON_OFF_MASK		0x0F
+#define LCD_DISPLAY_ON_OFF_MASK		0x0C
 #define LCD_DISPLAY_CLEAR_MASK		0x01
 #define LCD_ENTRY_MODE_MASK			0x06
 #define LCD_SHIFT_LEFT_MASK			0x18
@@ -11,12 +11,14 @@
 #define LCD_CURSOR_ON 				0x0E
 #define LCD_SET_CURSOR_LOCATION 	0x80
 #define LCD_SET_DDRAM_ADRESS		128
+#define TURN_OF_CURSOR				0x0C
+#define TURN_ON_CURSOR				0x0F	
 
 /***************** macros for goto_XY function to set the location to write   ***************/
 #define FIRST_LINE			0
 #define SECOND_LINE			1
 
-#define NUMBER_OF_REQUESTES				13
+#define NUMBER_OF_REQUESTES				30
 
 /*****************modes of LCD *********/
 #define DATE_TIME_MODE					0
@@ -28,12 +30,19 @@
 
 #define IDLE_MESSAGE					0x01
 /********** macros to position *********/
-#define LEFT			0x50
-#define RIGHT			0x60
-#define INC				0x70
-#define DEC				0x80
-#define OK				0x90
-#define MAX_LINE_SIZE	16
+
+#define CHANGE_MODE     0x10
+#define EDIT_MODE       0x20
+#define START           0x30
+#define STOP            0x40
+#define LEFT            0x50
+#define RIGHT           0x60
+#define INC		     	0x70
+#define DEC      		0x80
+#define OK              0x90
+#define RESET			0x80
+
+#define MAX_LINE_SIZE	15
 #define MIN_LINE_SIZE	0
 
  void Init_Sm();
@@ -69,6 +78,10 @@
  void LCD_Set_Cursor_Helper();
 
  void LCD_Clear_Display_Helper();
+
+ void LCD_Turn_Off_Cursor_Asynch();
+
+ void LCD_Turn_On_Cursor_Asynch();
 
  void Switches_Of_Keypad(void);
 
@@ -140,7 +153,9 @@ typedef enum{
 	Write_Data,
 	Write_Number,
 	Set_Cursor,
-	Clear_Display
+	Clear_Display,
+	Turn_Off_Cursor,
+	Turn_On_Cursor
 
 }LCD_Requests_options;
 
@@ -166,7 +181,7 @@ uint8_t Enable_Pin_State=ENABLE_PIN_LOW;
 
 LCD_XY_Values Cordinates={
 .X_pos=0,
-.Y_pos=0
+.Y_pos=6
 };
 
 Date_Time_t Current=year;
@@ -297,10 +312,10 @@ static User_Req Req[NUMBER_OF_REQUESTES]
 			.Type=None,
 			.Cursor_Pos=0,
 			.Command=0,
-			.Number={0}
-		},
-		/*[13]={.s=NULL,
-						.length=0,
+			.Number={0}},
+		
+		[13]={.s=NULL,
+			.length=0,
 			.state=READY,
 			.Type=None,
 			.Cursor_Pos=0,
@@ -308,13 +323,130 @@ static User_Req Req[NUMBER_OF_REQUESTES]
 			.Number={0}
 		},
 		[14]={.s=NULL,
+			.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[15]={.s=NULL,
 						.length=0,
 			.state=READY,
 			.Type=None,
 			.Cursor_Pos=0,
 			.Command=0,
 			.Number={0}
-		},*/
+		},
+		[16]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+			[17]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+			[18]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+		[19]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+		
+		[20]={.s=NULL,
+			.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[21]={.s=NULL,
+			.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[22]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[23]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+
+			[24]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}}
+		,
+		[25]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}},
+		
+		[26]={.s=NULL,
+			.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[27]={.s=NULL,
+			.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[28]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}
+		},
+		[29]={.s=NULL,
+						.length=0,
+			.state=READY,
+			.Type=None,
+			.Cursor_Pos=0,
+			.Command=0,
+			.Number={0}}
+	
 };
 /*********** variable to hold the index needed to be executed *******/
 volatile static uint8_t Request_Index=0;
@@ -342,6 +474,14 @@ void LCD_Test(void){
 	}
 }
 
+uint8_t sign1[1]={"/"};
+uint8_t sign2[1]={":"};
+
+uint8_t clock_Mode[6]="Date: ";
+uint8_t Time_Mode[6]="Time: ";
+
+uint8_t Stop_Watch[]={"StoP Watch"};
+
 uint8_t Change_Of_Time=CHANGED;
 
 
@@ -352,14 +492,18 @@ uint8_t Begin=0;
 void Switches_Of_Keypad(void){
 	if(Current_Display_Mode== DATE_TIME_MODE){
 		//// UARTFARME[1] is the recievied command from the uart
-		 if (UART_Buffer[1] == 0x10)//Mode Button
+		 if (UART_Buffer[1] == CHANGE_MODE)//Mode Button
             {
                 Current_Display_Mode = STOP_WATCH_MODE;
                 Display_Stop_Watch_Helper();
             }
-            else if (UART_Buffer[1] == 0x20) //Edit Mode Button
+            else if (UART_Buffer[1] == EDIT_MODE) //Edit Mode Button
             {
                 Current_Display_Mode = EDIT_MODE;
+				LCD_Turn_On_Cursor_Asynch();
+				LCD_Set_Cursor_Asynch(0, 6);
+				Cordinates.X_pos=0;
+				Cordinates.Y_pos=6;
             }
             else{
             			/* do nothing */
@@ -368,11 +512,11 @@ void Switches_Of_Keypad(void){
 	}
 	else if (Current_Display_Mode == STOP_WATCH_MODE){
 		//// Begin Button
-		if(UART_Buffer[1] == 0x30){
+		if(UART_Buffer[1] == START){
 			Begin=1;
 		}
 		// Mode Button
-		else if(UART_Buffer[1] == 0x10){
+		else if(UART_Buffer[1] == CHANGE_MODE){
 			Current_Display_Mode= DATE_TIME_MODE;
 			Change_Of_Time = CHANGED;
 		}
@@ -380,11 +524,129 @@ void Switches_Of_Keypad(void){
 		else if (UART_Buffer[1]==0x40){
 			Begin=0;
 		}
+		//for reset
+		else if (UART_Buffer[1]==RESET){
+			Begin=0;
+			Stop_Watch_Time.Seconds=0;
+			Stop_Watch_Time.Minutes=0;
+			Stop_Watch_Time.Hours=0;
+			Display_Stop_Watch_Helper();
+		}
 		else{
 			/* do nothing */
 		}
 		UART_Buffer[1] = IDLE_MESSAGE;
 	}
+		else if (Current_Display_Mode==EDIT_MODE){
+			/******** to find if the edit bit equal 1 ************/
+
+			switch (UART_Buffer[1])
+			{
+			case RIGHT:
+
+				Cordinates.Y_pos++;
+				if (Cordinates.Y_pos > MAX_LINE_SIZE)
+				{
+					/**** to set the column to the first one****/
+					Cordinates.Y_pos = 6;
+					/****** to increment the rows if the columns exceeds the max*/
+					Cordinates.X_pos++;
+					/****** to check if exceeded the number of rows available (2)***/
+					if (Cordinates.X_pos > 1)
+					{
+						Cordinates.X_pos = 0;
+					}
+					
+				}
+				LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
+				break;
+			case LEFT:
+
+				Cordinates.Y_pos--;
+				if (Cordinates.Y_pos < 6)
+				{
+					/**** to set the column to the first one****/
+					Cordinates.Y_pos = MAX_LINE_SIZE;
+					/****** to increment the rows if the columns exceeds the max*/
+					Cordinates.X_pos--;
+					/****** to check if exceeded the number of rows available (2)***/
+					if (Cordinates.X_pos < MIN_LINE_SIZE)
+					{
+						Cordinates.X_pos = 1;
+					}
+				}
+				LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
+				break;
+			case INC:
+				if (Cordinates.X_pos == 0 && (5 < Cordinates.Y_pos && Cordinates.Y_pos < 10))
+				{
+					Date.Year++;
+				}
+				else if (Cordinates.X_pos == 0 && (10 < Cordinates.Y_pos && Cordinates.Y_pos  < 13))
+				{
+					Date.Month++;
+				}
+				else if (Cordinates.X_pos == 0 && (13 < Cordinates.Y_pos && Cordinates.Y_pos  < 15))
+				{
+					Date.Day++;
+				}
+				else if (Cordinates.X_pos == 1 && (5 < Cordinates.Y_pos && Cordinates.Y_pos  < 8))
+				{
+					Time.Hours++;
+				}
+
+				else if (Cordinates.X_pos == 1 && (8 < Cordinates.Y_pos && Cordinates.Y_pos  < 11))
+				{
+					Time.Minutes++;
+				}
+				else if (Cordinates.X_pos == 1 && (11 < Cordinates.Y_pos && Cordinates.Y_pos  < 14))
+				{
+					Time.Seconds++;
+				}
+				Handle_Time_Edit_For_Date_Time_Mode();
+				Display_Date_Time_Helper();
+				LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
+				break;
+
+			case DEC:
+				if (Cordinates.X_pos == 0 && (5 < Cordinates.Y_pos && Cordinates.Y_pos  < 10))
+				{
+					Date.Year--;
+				}
+				else if (Cordinates.X_pos == 0 && (10 < Cordinates.Y_pos && Cordinates.Y_pos  < 13))
+				{
+					Date.Month--;
+				}
+				else if (Cordinates.X_pos == 0 && (13 < Cordinates.Y_pos && Cordinates.Y_pos  < 15))
+				{
+					Date.Day--;
+				}
+				else if (Cordinates.X_pos == 1 && (5 < Cordinates.Y_pos && Cordinates.Y_pos  < 8))
+				{
+					Time.Hours--;
+				}
+
+				else if (Cordinates.X_pos == 1 && (8 < Cordinates.Y_pos && Cordinates.Y_pos  < 11))
+				{
+					Time.Minutes--;
+				}
+				else if (Cordinates.X_pos == 1 && (11 < Cordinates.Y_pos && Cordinates.Y_pos  < 14))
+				{
+					Time.Seconds--;
+				}
+				Handle_Time_Edit_For_Date_Time_Mode();
+				Display_Date_Time_Helper();
+				LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
+				break;
+
+				case OK:
+				Current_Display_Mode = DATE_TIME_MODE;
+				Change_Of_Time = CHANGED;
+				LCD_Turn_Off_Cursor_Asynch();
+				break;
+
+			}
+		}
 }
 
 /*** task to write the date and time on lcd ***/
@@ -403,125 +665,23 @@ void Write_Date_Time_Task()
 		}
 		else if (Current_Display_Mode == STOP_WATCH_MODE)
 		{
-			//void Display_Stop_Watch_Helper();
+			//Display_Stop_Watch_Helper();
 		}
-		else if (Current_Display_Mode==EDIT_MODE){
-			/******** to find if the edit bit equal 1 ************/
-
-			switch (UART_Buffer[1])
-			{
-			case RIGHT:
-
-				Cordinates.Y_pos++;
-				if (Cordinates.Y_pos > MAX_LINE_SIZE)
-				{
-					/**** to set the column to the first one****/
-					Cordinates.Y_pos = 0;
-					/****** to increment the rows if the columns exceeds the max*/
-					Cordinates.X_pos++;
-					/****** to check if exceeded the number of rows available (2)***/
-					if (Cordinates.X_pos > 1)
-					{
-						Cordinates.X_pos = 0;
-					}
-					LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
-				}
-				break;
-			case LEFT:
-
-				Cordinates.Y_pos--;
-				if (Cordinates.Y_pos < MIN_LINE_SIZE)
-				{
-					/**** to set the column to the first one****/
-					Cordinates.Y_pos = MAX_LINE_SIZE;
-					/****** to increment the rows if the columns exceeds the max*/
-					Cordinates.X_pos--;
-					/****** to check if exceeded the number of rows available (2)***/
-					if (Cordinates.X_pos < MIN_LINE_SIZE)
-					{
-						Cordinates.X_pos = 1;
-					}
-					LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
-				}
-				break;
-			case INC:
-				if (Cordinates.X_pos == 0 && (0 < Cordinates.Y_pos && Cordinates.Y_pos < 4))
-				{
-					Date.Year++;
-				}
-				else if (Cordinates.X_pos == 0 && (4 < Cordinates.Y_pos && Cordinates.Y_pos  < 7))
-				{
-					Date.Month++;
-				}
-				else if (Cordinates.X_pos == 0 && (7 < Cordinates.Y_pos && Cordinates.Y_pos  < 9))
-				{
-					Date.Day++;
-				}
-				else if (Cordinates.X_pos == 1 && (0 < Cordinates.Y_pos && Cordinates.Y_pos  < 2))
-				{
-					Time.Hours++;
-				}
-
-				else if (Cordinates.X_pos == 1 && (2 < Cordinates.Y_pos && Cordinates.Y_pos  < 5))
-				{
-					Time.Minutes++;
-				}
-				else if (Cordinates.X_pos == 1 && (5 < Cordinates.Y_pos && Cordinates.Y_pos  < 7))
-				{
-					Time.Seconds++;
-				}
-				Handle_Time_Edit_For_Date_Time_Mode();
-				Display_Date_Time_Helper();
-				break;
-
-			case DEC:
-				if (Cordinates.X_pos == 0 && (0 < Cordinates.Y_pos && Cordinates.Y_pos  < 4))
-				{
-					Date.Year--;
-				}
-				else if (Cordinates.X_pos == 0 && (4 < Cordinates.Y_pos && Cordinates.Y_pos  < 7))
-				{
-					Date.Month--;
-				}
-				else if (Cordinates.X_pos == 0 && (7 < Cordinates.Y_pos && Cordinates.Y_pos  < 9))
-				{
-					Date.Day--;
-				}
-				else if (Cordinates.X_pos == 1 && (0 < Cordinates.Y_pos && Cordinates.Y_pos  < 2))
-				{
-					Time.Hours--;
-				}
-
-				else if (Cordinates.X_pos == 1 && (2 < Cordinates.Y_pos && Cordinates.Y_pos  < 5))
-				{
-					Time.Minutes--;
-				}
-				else if (Cordinates.X_pos == 1 && (5 < Cordinates.Y_pos && Cordinates.Y_pos  < 7))
-				{
-					Time.Seconds--;
-				}
-				Handle_Time_Edit_For_Date_Time_Mode();
-				break;
-
-				case OK:
-				Current_Display_Mode = DATE_TIME_MODE;
-				Change_Of_Time = CHANGED;
-				break;
-
-			}
-			// to reset the received byte from the UARt
-			UART_Buffer[1]=IDLE_MESSAGE;
-		}
+	
 		}
 
 
 	void Display_Stop_Watch_Helper(){
 		LCD_Clear_Display_Asynch();
 		LCD_Set_Cursor_Asynch(0, 4);
+		LCD_Write_String_NoCopy(Stop_Watch,10);
+		LCD_Set_Cursor_Asynch(1, 4);
 		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Hours);
-		LCD_Set_Cursor_Asynch(0, 7);
+		LCD_Write_String_NoCopy(sign2,1);
+		//LCD_Set_Cursor_Asynch(1, 7);
 		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Minutes);
-		LCD_Set_Cursor_Asynch(0,10);
+		LCD_Write_String_NoCopy(sign2,1);
+		//LCD_Set_Cursor_Asynch(1,10);
 		LCD_Wrtite_Number_Asynch(Stop_Watch_Time.Seconds);
 	}
 
@@ -529,30 +689,38 @@ void Write_Date_Time_Task()
 		LCD_Clear_Display_Asynch();
 			/**** to init the cursor position */
 			LCD_Set_Cursor_Asynch(0, 0);
+			LCD_Write_String_NoCopy(clock_Mode,6);
 			/* to print the date : YEAR/MONTH/DAY */
 			LCD_Wrtite_Number_Asynch(Date.Year);
-			LCD_Set_Cursor_Asynch(0, 5);
+			LCD_Write_String_NoCopy(sign1,1);
+			//LCD_Set_Cursor_Asynch(0, 5);
 			// LCD_Write_Data('/');
 			LCD_Wrtite_Number_Asynch(Date.Month);
-			LCD_Set_Cursor_Asynch(0, 7);
+			LCD_Write_String_NoCopy(sign1,1);
+			//LCD_Set_Cursor_Asynch(0, 8);
 			// LCD_Write_Data('/');
 			LCD_Wrtite_Number_Asynch(Date.Day);
 
 			/* Set the cursor on the second Line */
 			LCD_Set_Cursor_Asynch(1, 0);
+			LCD_Write_String_NoCopy(Time_Mode,6);
 
 			/* to print the Time : HOURS:MINUTES:SECONDS */
 			LCD_Wrtite_Number_Asynch(Time.Hours);
 			// LCD_Write_Data(':');
-			LCD_Set_Cursor_Asynch(1, 3);
+			//LCD_Set_Cursor_Asynch(1, 3);
+			LCD_Write_String_NoCopy(sign2,1);
 			LCD_Wrtite_Number_Asynch(Time.Minutes);
 			// LCD_Write_Data(':');
-			LCD_Set_Cursor_Asynch(1, 6);
+			LCD_Write_String_NoCopy(sign2,1);
+			//LCD_Set_Cursor_Asynch(1, 6);
 			LCD_Wrtite_Number_Asynch(Time.Seconds);
+			//LCD_Set_Cursor_Asynch(Cordinates.X_pos, Cordinates.Y_pos);
 	}
 	// task every 1000 miliSecond
 	void Sec_Increment_Task_For_Date_Time(void)
 	{
+		
 		Handle_Time_Edit_For_Date_Time_Mode();
 		Change_Of_Time = CHANGED;
 	}
@@ -588,7 +756,7 @@ void Handle_Time_Edit_For_Stop_Watch_Mode(){
 	else{
 		//do noting
 	}
-	if(Current_Display_Mode == STOP_WATCH_MODE){
+	if(Current_Display_Mode == STOP_WATCH_MODE&&Begin){
 	Display_Stop_Watch_Helper();
 	}
 }
@@ -596,7 +764,9 @@ void Handle_Time_Edit_For_Stop_Watch_Mode(){
 
 	void Handle_Time_Edit_For_Date_Time_Mode()
 	{
+		if(Current_Display_Mode==DATE_TIME_MODE||Current_Display_Mode==STOP_WATCH_MODE){
 		Time.Seconds++;
+		}
 		if (Time.Seconds == 60)
 		{
 			Time.Minutes++;
@@ -624,19 +794,19 @@ void Handle_Time_Edit_For_Stop_Watch_Mode(){
 		{
 			// do nothing
 		}
-		if (Date.Day == 30)
+		if (Date.Day > 30)
 		{
 			Date.Month++;
-			Date.Day = 0;
+			Date.Day = 1;
 		}
 		else
 		{
 			// do nothing
 		}
-		if (Date.Month == 12)
+		if (Date.Month >12)
 		{
 			Date.Year++;
-			Date.Month = 0;
+			Date.Month = 1;
 		}
 		else
 		{
@@ -668,6 +838,12 @@ void LCD_Task(){
 		case Write_Number:
 			LCD_Write_Number_Helper();
 		break;
+		case Turn_Off_Cursor:
+			LCD_Set_Cursor_Helper();
+			break;
+		case Turn_On_Cursor:
+			LCD_Set_Cursor_Helper();
+			break;	
 		default :
 					Request_Index=0;
 					break;
@@ -678,9 +854,6 @@ void LCD_Task(){
 	if(Request_Index==NUMBER_OF_REQUESTES){
 		Request_Index=0;
 	}
-	/*else{
-		Time_Out_Counter++;
-	}*/
 
 }
 
@@ -802,6 +975,29 @@ if(Enable_Pin_State==ENABLE_PIN_LOW){
 	}
 }
 
+void LCD_Turn_Off_Cursor_Asynch(){
+uint8_t counter=0;
+	for(counter=0;counter<NUMBER_OF_REQUESTES;counter++){
+	if(Req[counter].state==READY){
+		Req[counter].state=BUSY;
+		Req[counter].Command=TURN_OF_CURSOR;
+		Req[counter].Type=Turn_Off_Cursor;
+		counter=NUMBER_OF_REQUESTES; // to terminate from the loop
+}
+	}
+}
+
+void LCD_Turn_On_Cursor_Asynch(){
+	uint8_t counter=0;
+	for(counter=0;counter<NUMBER_OF_REQUESTES;counter++){
+	if(Req[counter].state==READY){
+		Req[counter].state=BUSY;
+		Req[counter].Command=TURN_ON_CURSOR;
+		Req[counter].Type=Turn_On_Cursor;
+		counter=NUMBER_OF_REQUESTES; // to terminate from the loop
+}
+	}
+}
 
 
 /******************* function to write number *************/
@@ -828,12 +1024,19 @@ void LCD_Wrtite_Number_Asynch(uint32_t Copy_number){
 				}
 
 
-
+				if(0 <Copy_number&& Copy_number< 10) {
+			Req[counter].Number[0]='0'+Copy_number;
+			Req[counter].Number[1]='0';
+			index=2;
+				}
+				else
+				{
 				// Extract digits from right to left
 				while(Copy_number > 0) {
 					digit = Copy_number % 10;
 					Req[counter].Number[index++] = digit + '0'; // Convert digit to ASCII character
 					Copy_number /= 10;
+				}
 				}
 				Req[counter].length=index;
 				counter=NUMBER_OF_REQUESTES; // to terminate from the loop

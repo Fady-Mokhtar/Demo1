@@ -83,7 +83,7 @@ typedef enum
 GPIO_enuErrorStatus_t GPIO_InitPin (GPIO_PinConfig_t *ptrToPinConfig);
 GPIO_enuErrorStatus_t GPIO_Set_PinValue(void *Port , u32 PinNum , u32 PinStatus );
 GPIO_enuErrorStatus_t GPIO_GetPinValue(void *Port , u32 PinNum,  u32 * PinStatus) ;
-
+ //GPIO_enuErrorStatus_t GPIO_GetPinValue(void *Port , u8 connection,u32 PinNum,  u32 * PinStatus);
 
 
 #endif

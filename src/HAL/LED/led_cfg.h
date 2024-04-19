@@ -7,9 +7,6 @@ typedef enum
 
 {
     LED_1,
-    LED_2,
-	LED_3,
-    LED_4,
 
    /*configure the desired number of LEDS*/
 

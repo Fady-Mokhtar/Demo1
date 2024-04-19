@@ -5,38 +5,8 @@
 extern LED_CFG_t LEDS [_LED_NUM];
 u8 state_1=LED_ON;
 u8 state_2=LED_ON;
-void LCD_Runnable()
-{
-	switch(state_1)
-	{
-		case LED_OFF:
-		LED_SetStatus(LED_1,LED_ON);
-		state_1=LED_ON;
-		break;
-		case LED_ON:
-		LED_SetStatus(LED_1,LED_OFF);
-		state_1=LED_OFF;
-		break;
-		default:
-		break;
-	}
-}
-void LED_Runnable()
-{
-	switch(state_2)
-	{
-		case LED_OFF:
-		LED_SetStatus(LED_2,LED_ON);
-		state_2=LED_ON;
-		break;
-		case LED_ON:
-		LED_SetStatus(LED_2,LED_OFF);
-		state_2=LED_OFF;
-		break;
-		default:
-		break;
-	}
-}
+
+
 
 LED_enuErrorStatus_t LED_Init(void)
 

@@ -156,7 +156,7 @@ GPIO_enuErrorStatus_t  GPIO_Set_PinValue(void *Port , u32 PinNum , u32 PinStatus
 
  }
 
- GPIO_enuErrorStatus_t GPIO_GetPinValue(void *Port , u32 PinNum,  u32 * PinStatus)
+ GPIO_enuErrorStatus_t GPIO_GetPinValue(void *Port,u32 PinNum,  u32 * PinStatus)
 
  {
 	 GPIO_enuErrorStatus_t Ret_enuErrorStatusGPIO = GPIO_enuOk;
@@ -176,7 +176,7 @@ GPIO_enuErrorStatus_t  GPIO_Set_PinValue(void *Port , u32 PinNum , u32 PinStatus
 
 	 		    else
 	 		    {
-	 		    	 *PinStatus=(((GPIO_PortRegisters *)Port)->GPIO_IDR>>PinNum)&1;
+					 *PinStatus=(((GPIO_PortRegisters *)Port)->GPIO_IDR>>PinNum)&1;
 	 		    }
 
 

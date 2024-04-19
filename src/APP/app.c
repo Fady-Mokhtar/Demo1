@@ -2,7 +2,7 @@
 /************************************************Includes************************************************/
 /********************************************************************************************************/
 
-#define demo_test
+//#define demo_test
 #ifdef demo_test
 
 /* Includes ------------------------------------------------------------------*/
@@ -13,10 +13,10 @@
 #include "dma.h"
 #include "stk.h"
 #include "nvic.h"
-#include "lcd.h"
+//#include "lcd.h"
 #include "keypad.h"
 #include "Schedular.h"
-
+#include "MCAL/PORT/port.h"
 /********************************************************************************************************/
 /************************************************Defines************************************************/
 /********************************************************************************************************/
@@ -45,6 +45,7 @@ extern USART_ManagerStruct usart1Manager;
 extern DMA_HandleTypeDef dma2Manager_stream2_usart1_rx;
 extern DMA_HandleTypeDef dma2Manager_stream7_usart1_tx;
 
+
 //------------global variables----------
 uint8_t g_lcdCommand = 0;
 
@@ -69,7 +70,7 @@ int main(void)
     /* Initialize all configured peripherals */
     //GPIO_Init(Loc_arrStrGpios, __NUM_OF_PINS_DEMO);
     GPIO_Init(Loc_DMAGpios, __NUM_OF_PINS_DMA);
-    LCD_Init_Asynch();
+   // LCD_Init_Asynch();
     Enable_Interrupts();
 
     USART_Init(&usart1Manager);
